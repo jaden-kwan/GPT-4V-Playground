@@ -1,16 +1,47 @@
-import OpenAI from "openai";
-//rawrrrr :D
+import base64
+import requests
 
+# DON'T MAKE THE MISTAKE OF LEAKING THE PRECIOUS OPEN AI KEY LOLLLLL
+api_key = "YOPENAI_API_KEY"
 
-const openai = new OpenAI();
+# Function to encode the image
+def encode_image(image_path):
+  with open(image_path, "rb") as image_file:
+    return base64.b64encode(image_file.read()).decode('utf-8')
 
-async function main() {
-  const completion = await openai.chat.completions.create({
-    messages: [{ role: "system", content: "You are a helpful assistant." }],
-    model: "gpt-4",
-  });
+# Path to your image
+image_path = "path_to_your_image.jpg"
 
-  console.log(completion.choices[0]);
+# Getting the base64 string
+base64_image = encode_image(image_path)
+
+headers = {
+  "Content-Type": "application/json",
+  "Authorization": f"Bearer {api_key}"
 }
 
-main();
+payload = {
+  "model": "gpt-4-vision-preview",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "What’s in this image?"
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": f"data:image/jpeg;base64,{base64_image}"
+          }
+        }
+      ]
+    }
+  ],
+  "max_tokens": 300
+}
+
+response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+
+print(response.json())
